@@ -30,7 +30,6 @@ executable slack-bot
                      , mtl
                      , pipes
                      , pipes-concurrency
-                     , pipes-websockets
                      , split
                      , either
                      , text

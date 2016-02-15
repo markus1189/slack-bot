@@ -7,6 +7,8 @@ module Network.Slack.Types (ReconnectUrl (reconnectUrl)
                            ,ValueWithOrigin(..)
                            ,Event(..)
                            ,User(..)
+                           ,UserId(..)
+                           ,TeamId(..)
                            ) where
 
 import Control.Monad (mzero)
@@ -19,8 +21,8 @@ import Network.Slack.TH (jsonOptionsWithPrefix,jsonOptionsEvent)
 newtype ReconnectUrl = ReconnectUrl { reconnectUrl :: Text }
                        deriving (Show,Eq,ToJSON,FromJSON,IsString)
 
-newtype UserId = UserId Text deriving (Show,Eq,FromJSON,ToJSON,IsString)
-newtype TeamId = TeamId Text deriving (Show,Eq,FromJSON,ToJSON,IsString)
+newtype UserId = UserId Text deriving (Show,Eq,Ord,FromJSON,ToJSON,IsString)
+newtype TeamId = TeamId Text deriving (Show,Eq,Ord,FromJSON,ToJSON,IsString)
 
 data Presence = Active | Away deriving (Show,Eq)
 instance FromJSON Presence where
@@ -45,7 +47,7 @@ instance ToJSON HelloEvt where
 
 data Event = PresenceChangeEvt { presUser :: UserId, presPresence :: Presence }
            | ReconnectUrlEvt { reconUrl :: ReconnectUrl }
-           | MessageEvt {msgChannel :: Text
+           | MessageEvt {msgChannel :: Maybe Text
                         ,msgUser :: UserId
                         ,msgText :: Text
                         ,msgTs :: Text
@@ -66,7 +68,8 @@ instance FromJSON ValueWithOrigin where
 instance ToJSON ValueWithOrigin where
   toJSON (ValueWithOrigin v c l) = object ["value" .= v
                                           ,"creator" .= c
-                                          ,"last_set" .= l]
+                                          ,"last_set" .= l
+                                          ]
 
 data Channel = Channel {chanId :: Text
                        ,chanName :: Text
@@ -77,13 +80,13 @@ data Channel = Channel {chanId :: Text
                        ,chanIsGeneral :: Bool
                        ,chanHasPins :: Bool
                        ,chanIsMember :: Bool
-                       ,chanLastRead :: Text
-                       ,chanLatest :: Event
-                       ,chanUnreadCount :: Integer
-                       ,chanUnreadCountDisplay :: Integer
-                       ,chanMembers :: [UserId]
-                       ,chanTopic :: ValueWithOrigin
-                       ,chanPurpose :: ValueWithOrigin
+                       ,chanLastRead :: Maybe Text
+                       ,chanLatest :: Maybe Event
+                       ,chanUnreadCount :: Maybe Integer
+                       ,chanUnreadCountDisplay :: Maybe Integer
+                       ,chanMembers :: Maybe [UserId]
+                       ,chanTopic :: Maybe ValueWithOrigin
+                       ,chanPurpose :: Maybe ValueWithOrigin
                        } deriving (Show,Eq)
 
 $(deriveJSON (jsonOptionsWithPrefix "chan") ''Channel)
@@ -101,5 +104,5 @@ data User = User {userId :: UserId
                  ,userIsUltraRestricted :: Bool
                  ,userIsBot :: Bool
                  ,userPresence :: Presence
-                 }
+                 } deriving (Show,Eq)
 $(deriveJSON (jsonOptionsWithPrefix "user") ''User)
