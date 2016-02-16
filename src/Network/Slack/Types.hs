@@ -34,17 +34,6 @@ instance ToJSON Presence where
   toJSON Active = String "active"
   toJSON Away = String "away"
 
-data HelloEvt = HelloEvt
-instance FromJSON HelloEvt where
-  parseJSON (Object o) = do
-    t <- o .: "type"
-    case (t :: Text) of
-      "hello" -> pure HelloEvt
-      _ -> mzero
-  parseJSON _ = mzero
-instance ToJSON HelloEvt where
-  toJSON _ = object ["type" .= ("hello" :: Text)]
-
 data Event = PresenceChangeEvt { presUser :: UserId, presPresence :: Presence }
            | ReconnectUrlEvt { reconUrl :: ReconnectUrl }
            | MessageEvt {msgChannel :: Maybe Text
